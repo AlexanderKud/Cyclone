@@ -518,45 +518,24 @@ private:
     alignas(32) std::array<uint64_t, 4> state;
 };
 
+// Returns a random Int uniformly in [minKey,maxKey]
 Int generateRandomPrivateKey(Int minKey, Int maxKey, Xoshiro256plus &rng) {
-    Int randomPrivateKey((uint64_t)0);
-
-    // Validate inputs
-    if (intGreater(minKey, maxKey)) {
-        throw std::invalid_argument("minKey must be less than or equal to maxKey");
-    }
-
-    // Calculate the range size
-    Int rangeSize;
-    rangeSize.Set(&maxKey);
+    Int rangeSize = maxKey; Int one; one.SetInt32(1);
     rangeSize.Sub(&minKey);
-
-    // Add 1 to the range size to include maxKey
-    Int one;
-    Int tempOne;
-    tempOne.SetBase16("1"); // Initialize tempOne with value 1
-    one.Set(&tempOne);   // Set one using the address of tempOne
     rangeSize.Add(&one);
 
-    // Check if rangeSize is zero (minKey == maxKey)
-    if (rangeSize.IsZero()) {
-        // If rangeSize is zero, return minKey directly
-        randomPrivateKey.Set(&minKey);
-        return randomPrivateKey;
+    size_t nBytes = rangeSize.GetBase16().size() / 2 + 1;
+    std::vector<uint64_t> randWords((nBytes + 7) / 8);
+    for (auto &w : randWords) {
+        w = rng.next();  
     }
 
-    // Generate random values in chunks of 64 bits using Xoshiro256plus
-    for (int i = 0; i < NB64BLOCK; ++i) {
-        uint64_t randVal = rng.next();
-        randomPrivateKey.ShiftL(64); // Shift left by 64 bits
-        randomPrivateKey.Add(randVal);
-    }
+    Int offset = hexToInt(bigNumToHex(randWords));
+    offset.Mod(&rangeSize);
 
-    // Ensure the randomPrivateKey is within the range
-    randomPrivateKey.Mod(&rangeSize); // randomPrivateKey is now in [0, rangeSize - 1]
-    randomPrivateKey.Add(&minKey);    // Shift to [minKey, maxKey]
-
-    return randomPrivateKey;
+    Int result = minKey;
+    result.Add(&offset);
+    return result;
 }
 
 // Function to read ranges from a file
