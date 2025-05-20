@@ -83,7 +83,7 @@ void clearLine() {
 #error Unsupported size
 #endif
 
-static constexpr int POINTS_BATCH_SIZE = 256;
+static constexpr int POINTS_BATCH_SIZE = 512;
 static constexpr int HASH_BATCH_SIZE = 8;
 int g_prefixLength = 4; 
 
