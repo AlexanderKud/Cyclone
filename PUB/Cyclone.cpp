@@ -655,11 +655,11 @@ int main(int argc, char *argv[]) {
                                 Int matchingPrivateKey;
                                 matchingPrivateKey.Set(&currentBatchKey);
                                 int idx = pointIndices[j];
-                                if (idx < 256) {
+                                if (idx < 512) {
                                     Int offset; offset.SetInt32(idx);
                                     matchingPrivateKey.Add(&offset);
                                 } else {
-                                    Int offset; offset.SetInt32(idx - 256);
+                                    Int offset; offset.SetInt32(idx - 512);
                                     matchingPrivateKey.Sub(&offset);
                                 }
                                 foundPrivateKeyHex = padHexTo64(intToHex(matchingPrivateKey));
